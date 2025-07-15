@@ -1,12 +1,1 @@
 # aucklandtransport.github.io
-
-            
-           
-           
-
-        
-           
-           
-
-        
-    
