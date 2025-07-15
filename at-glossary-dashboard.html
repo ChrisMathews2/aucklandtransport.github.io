@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auckland Transport Glossary Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #004499;
+            --accent-color: #ff6b35;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #6c757d;
+            --border-color: #e1e8ed;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            min-width: 250px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+        }
+
+        .category-nav {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 120px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        .category-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .category-list {
+            list-style: none;
+        }
+
+        .category-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .category-btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .category-btn:hover {
+            background: var(--bg-color);
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        .category-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .category-count {
+            font-size: 0.875rem;
+            opacity: 0.7;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 0.125rem 0.5rem;
+            border-radius: 12px;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .terms-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .term-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .term-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-color);
+        }
+
+        .term-header {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .term-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .term-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            flex: 1;
+        }
+
+        .term-definition {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .term-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-color);
+            color: var(--text-secondary);
+            border-radius: 16px;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .category-nav {
+                position: static;
+                max-height: none;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .search-container {
+                max-width: 100%;
+            }
+        }
+
+        .icon-transport { background: #e3f2fd; color: #1976d2; }
+        .icon-infrastructure { background: #f3e5f5; color: #7b1fa2; }
+        .icon-operations { background: #e8f5e9; color: #388e3c; }
+        .icon-safety { background: #fff3e0; color: #f57c00; }
+        .icon-planning { background: #fce4ec; color: #c2185b; }
+        .icon-technology { background: #e1f5fe; color: #0277bd; }
+        .icon-financial { background: #fff9c4; color: #f9a825; }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span>🚌</span>
+                    <span>Auckland Transport Glossary</span>
+                </div>
+                <div class="search-container">
+                    <input type="text" class="search-box" id="searchInput" placeholder="Search terms and definitions...">
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalTerms">0</div>
+                        <div class="stat-label">Total Terms</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="visibleTerms">0</div>
+                        <div class="stat-label">Showing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <aside class="sidebar">
+                <nav class="category-nav">
+                    <h3 class="category-title">Categories</h3>
+                    <ul class="category-list" id="categoryList">
+                        <!-- Categories will be dynamically generated -->
+                    </ul>
+                </nav>
+            </aside>
+
+            <main class="content">
+                <div class="terms-grid" id="termsGrid">
+                    <div class="loading">Loading glossary terms...</div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Glossary data
+        const glossaryData = [
+            {
+                term: "Acquiring Authority",
+                definition: "When AT seeks to acquire land for a public project (such as roads or transport infrastructure), AT first attempts to reach a voluntary agreement with the landowner. This involves negotiations where both parties agree on a price and terms for the sale of the land.\n\nIf an agreement cannot be reached between AT and the landowner, Auckland Council, as the acquiring authority under the Public Works Act 1981, can initiate compulsory acquisition. This legal process allows the Council to acquire the land without the landowner's consent, subject to specific legal procedures. The landowner can still object, and compensation is provided, typically at market value. Compulsory acquisition is often considered a last resort and occurs when the land is essential for public works and negotiations have failed.",
+                category: "Financial & Regulatory",
+                icon: "💰"
+            },
+            {
+                term: "Active Modes",
+                definition: "Transportation modes include walking, cycling, jogging, and the use of small-wheeled transport such as skates, skateboards, push scooters, and wheelchair travel.\n\nActive modes are predominantly used for short local trips (up to 2km for walking and 10km for cycling) and, particularly walking, are also the primary form of access/egress for public transport trips at most locations.\n\nActive modes can help reduce congestion, improve network productivity, reduce transport-related emissions and improve public health. The Active Modes team sits with the PT team at AT to plan, prioritise and secure funding for improving walking and cycling infrastructure, to work with targeted trip attractors (schools, tertiary education, PT interchanges, workplaces and community groups) to promote and enable safe and sustainable travel behaviour and to provide customers with information about active modes networks and services. One of the prime objectives of the directorate is to increase the proportion of active modes and public transport journeys as Auckland grows.",
+                category: "Public Transport & Services",
+                icon: "🚶"
+            },
+            {
+                term: "AITP (Auckland Integrated Transport Plan)",
+                definition: "A 30-year strategic plan for Auckland's transport network development, currently in preparatory stages.",
+                category: "Planning & Development",
+                icon: "🗺️"
+            },
+            {
+                term: "Airport - Great Barrier Island",
+                definition: "Means the Great Barrier airport. Auckland Transport manages the aerodrome under a delegation from Council. Council owns land.",
+                category: "Infrastructure & Assets",
+                icon: "✈️"
+            },
+            {
+                term: "AROC",
+                definition: "The Auckland Rail Operations Centre (AROC) is a facility that centralises the monitoring and control of Auckland's rail network. It is the result of collaboration between Auckland Transport, Auckland One Rail, and KiwiRail. The centre operates similarly to air traffic control but for trains, overseeing aspects such as train schedules, separation distances, and routing.",
+                category: "Operations & Management",
+                icon: "🚉"
+            },
+            {
+                term: "Asset Management",
+                definition: "The combination of management, financial, economic engineering and other practices applied to physical assets with the objective of providing the required level of service in the most cost effective manner.\n\nAuckland Transport uses two main systems: RAMM for spatially mapping and managing roading assets, and SPM Assets for managing public transport property assets in a hierarchical database.",
+                category: "Operations & Management",
+                icon: "🏗️"
+            },
+            {
+                term: "Asset Management Plan (AMP)",
+                definition: "Strategic document outlining how AT maintains and manages transport infrastructure assets to ensure safety and functionality. A plan development for the management of one or more infrastructural assets (currently valued at $28 billion) that combine multidisciplinary management techniques (including technical and financial) over the lifecycle of the asset in the most cost-effective manner to provide a specified level of service. This includes all road pavements, road drainage, culverts, bridges, retaining walls, footpaths, cycleways, traffic signals and controls, streetlighting, car parks, bus stations and shelters, rail stations, depots and rolling stock, ferries, wharves and navigation aids, passenger information systems, HOP systems, parking management systems, safety systems, etc.",
+                category: "Planning & Development",
+                icon: "📋"
+            },
+            {
+                term: "Asset Management Strategy",
+                definition: "A strategy for asset management covering, the development and implementation of plans and programmes for asset creation, operation, maintenance rehabilitation/replacement, disposal and performance monitoring to ensure that the desired levels of services and other operational objectives are achieved at minimum cost.",
+                category: "Planning & Development",
+                icon: "📊"
+            },
+            {
+                term: "Asset Ownership - PT/Rail Above Track",
+                definition: "The assets above the rail track include rail stations (surface and underground), rail rolling stock (EMUs), stabling and depots, CRL underground station control and safety systems, passenger information systems, etc.",
+                category: "Infrastructure & Assets",
+                icon: "🚊"
+            },
+            {
+                term: "Asset Ownership - PT/Rail Below Track",
+                definition: "The rail track and below is owned and maintained by KiwiRail",
+                category: "Infrastructure & Assets",
+                icon: "🛤️"
+            },
+            {
+                term: "AT and Healthy Waters Service Level Agreement",
+                definition: "Auckland Transport is responsible for managing and funding stormwater assets within the road corridor, including roads, catchpits, culverts, and detention devices that serve road runoff. AT also oversees the asset database (RAMM), leads funding applications, and manages NZTA subsidy claims. Healthy Waters and Flood Resilience (HWFR), a division of Auckland Council, is responsible for the delivery of maintenance, renewals, and flood response for the urban stormwater network, including pipes, manholes, soak holes, and treatment devices like rain gardens. HWFR operates the services under AT's budget, manages contractors, and supplies all relevant data for asset management. While AT leads strategic oversight and coordination, HWFR is the primary service provider. Vegetation maintenance of stormwater treatment devices is delivered separately by Auckland Council's Parks and Community Facilities team under a distinct agreement.",
+                category: "Operations & Management",
+                icon: "💧"
+            },
+            {
+                term: "AT HOP",
+                definition: "Auckland Transport's integrated ticketing system for public transport, using smart cards for bus, train, and ferry services.",
+                category: "Technology & Systems",
+                icon: "💳"
+            },
+            {
+                term: "AT Listens and Responds",
+                definition: "Key performance metric measuring public perception of AT's responsiveness to community needs (SOI target: 33%).",
+                category: "Operations & Management",
+                icon: "👂"
+            },
+            {
+                term: "AT Mobile",
+                definition: "Auckland Transport's mobile application for journey planning and transport information. The application AT Mobile helps plan and track journeys on foot, by bike, and across bus, train and ferry services. AT Mobile supports the end-to-end journey, helps new users get on board, and provides a single source for the most useful PT customer functionality.",
+                category: "Technology & Systems",
+                icon: "📱"
+            },
+            {
+                term: "ATOC",
+                definition: "Auckland Transport Operation Centre (ATOC) is a joint venture between Auckland Transport and Waka Kotahi NZ Transport Agency which works behind the scenes to help keep people and freight moving. Key functions of ATOC include real-time monitoring, incident management, optimising traffic signals, providing travel information, helping manage the impact of planned activity and reviewing signalised intersection designs",
+                category: "Operations & Management",
+                icon: "🚦"
+            },
+            {
+                term: "Auckland Forecasting Centre",
+                definition: "A partnership between Auckland Council, the NZ Transport Agency and Auckland Transport, combining the transport modelling resources into a single operational unit under integrated governance. Focused on growth impacts, travel demand and traffic forecasting.",
+                category: "Planning & Development",
+                icon: "📈"
+            },
+            {
+                term: "Auckland Rail Network (ARN) Asset Split",
+                definition: "The Auckland rail network (ARN) is allocated between KiwiRail and Auckland Transport (AT) in line with an 'Above/Below Ground' ownership split. KiwiRail Infrastructure has ownership of the 'below ground' asset which includes tracks, signals and electrical power supply. Land below the track and stations is owned by the Crown.\n\nAuckland Transport owns the above-ground elements, such as station buildings (CHK) and the EMU depot.",
+                category: "Infrastructure & Assets",
+                icon: "🚆"
+            },
+            {
+                term: "Britomart Station Responsibilities",
+                definition: "Britomart Station follows a modified version of the typical Station ownership model, where the land beneath the Britomart tunnel and track is owned by Auckland Council and leased to KiwiRail on a 999-year lease.",
+                category: "Infrastructure & Assets",
+                icon: "🏛️"
+            },
+            {
+                term: "Business Case Development",
+                definition: "AT prepares business cases for NZTA to seek funding of projects (using NZTA standards).",
+                category: "Planning & Development",
+                icon: "💼"
+            },
+            {
+                term: "CCO (Council Controlled Organisation)",
+                definition: "Entities like Auckland Transport that are owned by Auckland Council but operate independently.",
+                category: "Financial & Regulatory",
+                icon: "🏢"
+            },
+            {
+                term: "City Rail Link (CRL)",
+                definition: "Major underground rail project connecting Britomart to Mt Eden, scheduled to open with 'Day 1' operations.",
+                category: "Infrastructure & Assets",
+                icon: "🚇"
+            },
+            {
+                term: "Community Initiated Projects (CIP)",
+                definition: "Auckland Transport's Community Initiated Programme (CIP) enables local communities to request local transport network improvements based on their specific needs and priorities. Examples include pedestrian crossings, traffic calming, new or improved footpaths new signage or intersection improvements",
+                category: "Planning & Development",
+                icon: "👥"
+            },
+            {
+                term: "Comprehensive Parking Management Plan (CPMP)",
+                definition: "Strategic plans developed in collaboration with local boards to manage parking in specific areas.",
+                category: "Planning & Development",
+                icon: "🅿️"
+            },
+            {
+                term: "Contactless Payments",
+                definition: "New payment system launched November 2024 allowing customers to pay PT fares using credit/debit cards and mobile devices.",
+                category: "Technology & Systems",
+                icon: "💳"
+            },
+            {
+                term: "Deaths and Serious Injuries (DSI)",
+                definition: "Key safety metric tracking fatalities and serious injuries on Auckland roads (target: no more than 576 annually).",
+                category: "Safety & Enforcement",
+                icon: "⚠️"
+            },
+            {
+                term: "Development Contributions",
+                definition: "Development contributions are charges imposed by Auckland Council on property developers to fund infrastructure needed to support growth, including transport infrastructure. While Auckland Council collects these contributions under the Local Government Act 2002, a portion is allocated to Auckland Transport to help fund new or upgraded roads, intersections, footpaths, and public transport facilities required as a result of new developments. These contributions ensure that growth-related transport costs are partially recovered from those who create the demand, rather than being solely funded by existing ratepayers.",
+                category: "Financial & Regulatory",
+                icon: "🏗️"
+            },
+            {
+                term: "DIA Measures",
+                definition: "Department of Internal Affairs mandatory reporting requirements for local government transport performance.",
+                category: "Financial & Regulatory",
+                icon: "📊"
+            },
+            {
+                term: "Eastern Busway",
+                definition: "Major public transport infrastructure project connecting Panmure to Botany, including stages EB2, EB3R, EB3C, and 4i.",
+                category: "Infrastructure & Assets",
+                icon: "🚌"
+            },
+            {
+                term: "EMU (Electric Multiple Unit)",
+                definition: "Electric trains used on Auckland's rail network, with new units being delivered for CRL operations.",
+                category: "Infrastructure & Assets",
+                icon: "🚊"
+            },
+            {
+                term: "Enforcement",
+                definition: "Issuing of infringement notices for, and prosecution of:\n\n- stationary vehicle offences under the Land Transport Act 1998 (\"LTA\") parking in any portion of a road in breach of any legislation/bylaw or any offence specified as a stationary vehicle offence in the LTA regulations (failing to display a current motor vehicle warrant of fitness or licence (registration);\n\n- AT also undertakes Harbourmaster enforcement\n\n- Offences re SVLs (see below)",
+                category: "Safety & Enforcement",
+                icon: "👮"
+            },
+            {
+                term: "Farebox Recovery Ratio",
+                definition: "Percentage of public transport operating costs recovered through passenger fares (target: 34%).",
+                category: "Financial & Regulatory",
+                icon: "💰"
+            },
+            {
+                term: "FareShare",
+                definition: "Program working with businesses to support employee public transport use through subsidized fares.",
+                category: "Public Transport & Services",
+                icon: "🎫"
+            },
+            {
+                term: "First & Last Leg",
+                definition: "PT journeys are often made up of multiple 'legs', with one or more PT trips in the middle of the journey. The first leg is at the beginning of the journey, where customers get from their origin to their first PT stop. The last leg is between the last PT stop and the final destination. The first and last leg are usually by active modes such as walking, cycling or micro-mobility. Many PT facilities incorporate secure cycle storage and drop off zone for scooter and ebike share, to improve the connection between modes.\n\nOn-Demand Services\n\nThe legs can include on-demand services which are a form of transport where vehicles adapt their routes, stops and timetables according to customers' needs, rather than using a fixed route or timetable.\n\nDirect On-Demand Services\n\nAT's direct involvement in on-demand transport includes the AT Local service, which is currently operating in South Auckland. This is a publicly subsidised, app-based rideshare service that uses dynamic routing to connect people with the broader PT network, particularly useful for first and last leg travel. AT Local is operated by contracted commercial providers, as AT does not (and can not) currently own its own vehicles. It is similar in function to rideshare services like Uber, but is designed to support PT access and affordability. On-demand services like AT Local are typically considered in the following situations:\n\n- Complementing existing PT -- providing new first/last leg connections to frequent services;\n\n- Supplementing service gaps -- extending PT access to areas with no existing coverage or low demand outside of peak hours;\n\n- Replacing underperforming routes -- offering a better customer experience and improved value for money in areas where fixed routes are inefficient.\n\nIndirect On-Demand Services\n\nAT also plays a regulatory or enabling role in other forms of on-demand and shared transport. This includes licensing private operators of e-scooters, as well as potential support for services like bike sharing and carpooling. While AT doesn't run these services directly, they form part of the broader first and last leg ecosystem.\n\nPrivate operators provide transport services that complement the public transport network, offering more flexible options for completing journeys efficiently. Key operators include:\n\n- Car-sharing providers like Cityhop and Mevo, offering short-term vehicle rentals. Auckland Transport sometimes oversees the parking area where these vehicles are located. For example no charges on metered parking\n\n- Carpooling providers such as POOLIT and MISH\n\n- Ride-sharing services like UberPool\n\n- E-scooter providers like Lime and Beam.",
+                category: "Public Transport & Services",
+                icon: "🚶"
+            },
+            {
+                term: "Fleet Procurement",
+                definition: "Means the procurement of bus, train and ferry fleets. AT specifies the requirements for the bus fleet, which is procured and owned by bus operators. AT owns the train fleet. The ferry fleet is a mix of operator-owned and ATowned, with new vessels specified and owned by AT.",
+                category: "Operations & Management",
+                icon: "🚌"
+            },
+            {
+                term: "Footpaths",
+                definition: "As defined in section 315 of the Local Govt Act 1974) within Auckland.\n\nA path or way principally designed for, and used by, pedestrians; and includes a footbridge.\n\nUsers of mobility devices and wheeled recreational devices are permitted (unless specifically prohibited by the road controlling authority) to use a footpath.",
+                category: "Infrastructure & Assets",
+                icon: "🚶"
+            },
+            {
+                term: "Frequent Transit Network (FTN)",
+                definition: "Bus and train routes with services at least every 15 minutes during peak times.",
+                category: "Public Transport & Services",
+                icon: "🚌"
+            },
+            {
+                term: "Funding",
+                definition: "Auckland Council funds through the LTP; AT leverages co-funding from Waka Kotahi and other sources. Need to include all funding sources, for eg advertising (which this govt wants to see more of).",
+                category: "Financial & Regulatory",
+                icon: "💵"
+            },
+            {
+                term: "Future Connect",
+                definition: "Future Connect is the network plan for Auckland's transport system. It brings together the important roads for each of the transport modes and identifies how these networks are performing now and are likely to change over the next decade. This helps us make decisions around network management and protect the network's integrity.",
+                category: "Planning & Development",
+                icon: "🔮"
+            },
+            {
+                term: "GSS (Group Shared Services)",
+                definition: "Proposed consolidation of support services across Auckland Council and CCOs.",
+                category: "Operations & Management",
+                icon: "🏢"
+            },
+            {
+                term: "Harbourmaster",
+                definition: "Means, with respect to Auckland Transport's role, responsibility for the beacons and moorings CHK\n\nThe harbourmaster is an appointed official responsible for overseeing the safe and efficient operation of a harbour or port. Their roles and responsibilities include regulating navigation, ensuring safety, and managing the harbour environment. This includes the placement, maintenance, and management of beacons (such as lighthouses, buoys, or markers) to guide vessels safely and overseeing moorings used to secure vessels within the port area. The harbourmaster has the authority to issue orders for vessel movements, manage risks, and take actions to mitigate hazards, ensuring compliance with maritime regulations and maintaining a safe operating environment for all harbour activities.",
+                category: "Safety & Enforcement",
+                icon: "⚓"
+            },
+            {
+                term: "Intelligent Transport Systems",
+                definition: "Auckland Transport defines ITS as a transport-focused application of digital, communications, and sensor technologies to improve safety, efficiency, and customer experience across all modes---vehicles, public transport, cycling, and walking. ITS in Auckland spans five key streams: Open Source Data, Customer Focus, Network Agility, Future Transport, and Safety",
+                category: "Technology & Systems",
+                icon: "🤖"
+            },
+            {
+                term: "Ka Tupu Ka Wana",
+                definition: "AT's Achieving Māori Outcomes Plan 2024-2027, setting direction for supporting Māori wellbeing and aspirations.",
+                category: "Planning & Development",
+                icon: "🌿"
+            },
+            {
+                term: "KiwiRail Rail Network Rebuild",
+                definition: "A multi-year infrastructure upgrade programme focused on renewing Auckland's ageing rail foundations. It involves removing old tracks, replacing the rock base (track formation), upgrading drainage, and laying new track and ballast. The work is essential to prepare the network for higher-frequency services and the City Rail Link (CRL), improving safety, reliability, and long-term resilience of the rail system.",
+                category: "Infrastructure & Assets",
+                icon: "🛤️"
+            },
+            {
+                term: "Kōkiri Agreements",
+                definition: "Formal agreements between AT and Local Boards outlining local transport priorities and work plans.",
+                category: "Planning & Development",
+                icon: "📝"
+            },
+            {
+                term: "Land Transport Act 1998",
+                definition: "AC Public Law to complete (if relevant)",
+                category: "Financial & Regulatory",
+                icon: "⚖️"
+            },
+            {
+                term: "Land Transport Management Act 2003",
+                definition: "The LTMA provides the legal framework for managing and funding land transport activities. The purpose of the LTMA is to contribute to an effective, efficient, and safe land transport system in the public interest",
+                category: "Financial & Regulatory",
+                icon: "⚖️"
+            },
+            {
+                term: "Local Board Transport Capital Fund",
+                definition: "Funding allocated for transport projects prioritized by Local Boards.",
+                category: "Financial & Regulatory",
+                icon: "💰"
+            },
+            {
+                term: "Local Government (Auckland Council) Act 2009",
+                definition: "AC Public Law to complete (if relevant)",
+                category: "Financial & Regulatory",
+                icon: "⚖️"
+            },
+            {
+                term: "Local Government Act 2002",
+                definition: "AC Public Law to complete (if relevant)",
+                category: "Financial & Regulatory",
+                icon: "⚖️"
+            },
+            {
+                term: "Long-term Plan (LTP)",
+                definition: "Auckland Council's 10-year budget and planning document that includes transport funding.",
+                category: "Planning & Development",
+                icon: "📊"
+            },
+            {
+                term: "LPRX (Licence Plate Recognition)",
+                definition: "Technology used for automated parking enforcement, operational since December 2024.",
+                category: "Technology & Systems",
+                icon: "📷"
+            },
+            {
+                term: "Maintenance and Operations",
+                definition: "The routine operation and maintenance of infrastructure assets, for all planned maintenance, reactive maintenance, emergency works and operation of all networks (traffic control signals and systems, traffic lighting, parking systems, public information systems, HOP systems, emergency systems, etc).\n\nThis includes all road pavements, road drainage, culverts, bridges, retaining walls, footpaths, cycleways, traffic signals and controls, streetlighting, car parks, bus stations and shelters, rail stations, depots and rolling stock, ferries, wharves and navigation aids, etc.",
+                category: "Operations & Management",
+                icon: "🔧"
+            },
+            {
+                term: "Mana Whenua",
+                definition: "Māori groups with territorial rights and authority over particular areas, engaged in transport planning decisions.",
+                category: "Planning & Development",
+                icon: "🌿"
+            },
+            {
+                term: "Mataawaka",
+                definition: "Māori living in Auckland who are not in a Mana Whenua group, engaged through public consultation.",
+                category: "Planning & Development",
+                icon: "👥"
+            },
+            {
+                term: "MROM",
+                definition: "Metro Rail Operating Model.\n\nThe Metro Rail Operating Model refers to the framework that defines how metropolitan passenger rail services are planned, funded, operated, and maintained in urban centres such as Auckland and Wellington. It outlines the roles and responsibilities of key agencies---KiwiRail (infrastructure owner and maintainer), Auckland Transport or Greater Wellington Regional Council (service planners and funders), and contracted operators like Auckland One Rail---to deliver integrated, reliable rail services.\n\nThe MROM was established 15 years ago. In March 2024, the Transport Minister initiated a comprehensive review of the model, with the goal of completing it by the end of the year. In the latest update from October 2024, the Minister confirmed that the review is still ongoing.",
+                category: "Operations & Management",
+                icon: "🚊"
+            },
+            {
+                term: "National Land Transport Fund (NLTF)",
+                definition: "The NLTF is the primary funding source for New Zealand's land transport system. It is managed by Waka Kotahi NZ Transport Agency and is made up of revenue from fuel excise duty, road user charges, vehicle registration, and other transport-related fees. The fund supports investment in transport activities such as road maintenance, public transport, safety improvements, and walking and cycling infrastructure, as outlined in the National Land Transport Programme (NLTP).",
+                category: "Financial & Regulatory",
+                icon: "🏦"
+            },
+            {
+                term: "National Land Transport Plan (NLTP)",
+                definition: "Government's three-year investment program for land transport, administered by NZTA.",
+                category: "Planning & Development",
+                icon: "📋"
+            },
+            {
+                term: "National Land Transport Programme (NLTP)",
+                definition: "The NLTP is a three-year investment programme managed by NZTA. It sets out all land transport activities that will receive funding from the National Land Transport Fund (NLTF), including maintenance, public transport, safety initiatives, and infrastructure projects. The NLTP is guided by the Government Policy Statement (GPS) on land transport and reflects national and regional transport priorities.",
+                category: "Planning & Development",
+                icon: "📑"
+            },
+            {
+                term: "National Ticketing System",
+                definition: "The National Ticketing Solution (NTS) is a partnership between the New Zealand Transport Agency Waka Kotahi (NZTA) and 13 Public Transport Authorities (PTAs) which will provide a range of easy-to-use payment methods for all public transport across the country. The new national system will be called Motu Move. Customers will be able to pay for public transport using contactless debit or credit cards and digital payment methods such as Apple Pay and Google Pay on mobile phones and smart watches, as well as a prepaid Motu Move card and pre-bought tickets",
+                category: "Technology & Systems",
+                icon: "🎫"
+            },
+            {
+                term: "Network Access Agreement",
+                definition: "The Auckland Network Access Agreement (ANAA) sets out AT's access rights and responsibilities in relation to the Auckland rail network, network provider KiwiRail's performance obligations and the relationship between AT and KiwiRail. Network Access charges are reviewed annually",
+                category: "Operations & Management",
+                icon: "📄"
+            },
+            {
+                term: "Network Performance",
+                definition: "The efficiency and reliability with which users of a transportation network can travel to destinations on the network. Measurements of such performance may include accessibility, congestion, reliability, resiliency, security or other appropriate metrics. These elements align with Auckland Transport's goals and performance measures as outlined in the Statement of Intent (SOI)",
+                category: "Operations & Management",
+                icon: "📊"
+            },
+            {
+                term: "Northwest Busway",
+                definition: "Rapid transit busway serving northwest Auckland, celebrating first anniversary with 5 million trips.",
+                category: "Infrastructure & Assets",
+                icon: "🚌"
+            },
+            {
+                term: "NZGTTM (New Zealand Guide to Temporary Traffic Management)",
+                definition: "Updated standards replacing CoPTTM for managing roadworks and events.",
+                category: "Operations & Management",
+                icon: "🚧"
+            },
+            {
+                term: "NZTA (New Zealand Transport Agency)",
+                definition: "National government agency that co-funds Auckland transport projects.",
+                category: "Financial & Regulatory",
+                icon: "🏛️"
+            },
+            {
+                term: "Papakainga",
+                definition: "Māori communal living areas requiring improved transport access and safety.",
+                category: "Planning & Development",
+                icon: "🏘️"
+            },
+            {
+                term: "Park and Ride",
+                definition: "A parking building and/or parking lot/space (and associated facilities, including any cycle parking) provided primarily for the patrons of a nearby public transport service to assist their modal transfer to the public transport service.",
+                category: "Infrastructure & Assets",
+                icon: "🚗"
+            },
+            {
+                term: "Parking (off road)",
+                definition: "The provision of motor vehicle parking other than on roads (as defined in section 315 of the Local Government Act 1974) and may include public parking facilities in parking areas and parking buildings. Rules about parking are covered in Part 6 of the Land Transport (Road User) Rule 2004.",
+                category: "Infrastructure & Assets",
+                icon: "🅿️"
+            },
+            {
+                term: "Parking (on road)",
+                definition: "A road is defined in section 315 of the Local Government Act 1974\n\na. In relation to any portion of a road where parking is, for the time being, governed by the location of parking meters or vending machines placed under a bylaw of a local authority, the stopping or standing of a vehicle on that portion of the road for any period exceeding five minutes; and\n\nb. in relation to any other portion of a road, the stopping or standing of a vehicle (other than a vehicle picking up or setting down passengers in a loading zone or reserved parking area, and entitled to do so) on that portion of the road.\n\nRules about parking are covered in Part 6 of the Land Transport (Road User) Rule 2004.",
+                category: "Infrastructure & Assets",
+                icon: "🚘"
+            },
+            {
+                term: "Private Share Revenue Ratio (PRR)",
+                definition: "Proportion of public transport costs covered by non-public funding sources.",
+                category: "Financial & Regulatory",
+                icon: "💹"
+            },
+            {
+                term: "PT (Public Transport)",
+                definition: "Collective term for buses, trains, and ferries serving Auckland.",
+                category: "Public Transport & Services",
+                icon: "🚌"
+            },
+            {
+                term: "PT Assets (excl PT Fleet)",
+                definition: "The public transport infrastructure and equipment owned by or under the control of Auckland Transport, (except PT Fleet), used in PT service delivery",
+                category: "Infrastructure & Assets",
+                icon: "🏢"
+            },
+            {
+                term: "PT Capital Spend",
+                definition: "Means capital spend on PT Assets (excluding PT Fleet)",
+                category: "Financial & Regulatory",
+                icon: "💰"
+            },
+            {
+                term: "PT Commercial & Contract Management",
+                definition: "The management of public transport commercial relationships, contracts, and compliance, including operator partnerships, contract variations, procurement processes, and fare policies. It involves ensuring value for money and pursuing ancillary revenue opportunities while maintaining contract integrity and performance monitoring.",
+                category: "Operations & Management",
+                icon: "📋"
+            },
+            {
+                term: "PT Contract (Bus)",
+                definition: "The contractual arrangements for bus services, where a total of $486.5 million (FY24) is allocated to cover 65.6 million bus service kilometres. These costs are paid to bus operators to cover various aspects, including capital expenses, ongoing operational costs such as fuel, road user charges, and maintenance, as well as driver wages, with an emphasis on transitioning to a minimum of $30 per hour for drivers.",
+                category: "Operations & Management",
+                icon: "🚌"
+            },
+            {
+                term: "PT Contract (Ferry)",
+                definition: "The contractual arrangements for ferry services, where a total of $62.5 million (FY24) is allocated to cover 1.49 million ferry service kilometres. The contract includes costs for ferry capital and lease expenses, operating costs, and crew wages.",
+                category: "Operations & Management",
+                icon: "⛴️"
+            },
+            {
+                term: "PT Contract (Train)",
+                definition: "The contractual agreement to operate 6.2 million rail service kilometres, under which Auckland One Rail (AOR) receives funding to manage passenger rail services, train maintenance, and rail facility upkeep. For FY24, these charges amounted to $161.3 million. This contract excludes the maintenance of Britomart and Mt Eden stations.",
+                category: "Operations & Management",
+                icon: "🚆"
+            },
+            {
+                term: "PT Depot & Stabling Assets",
+                definition: "The PT Depot & Stabling Assets refer to the properties and infrastructure used for the parking, maintenance, and storage of Auckland's public transport vehicles, including trains, buses, and other rolling stock. These assets typically include the depot buildings, stabling yards, tracks, and other supporting infrastructure required to ensure the operational readiness of public transport fleets. They play a key role in maintaining the efficient functioning of the public transport network by providing a secure and operationally equipped location for vehicles to be stored, maintained, and serviced when not in use.",
+                category: "Infrastructure & Assets",
+                icon: "🏗️"
+            },
+            {
+                term: "PT Fleet",
+                definition: "The ferries, buses and rail vehicles under the control of Auckland Transport used in PT Service Delivery. AT owns all EMUs, it has electric ferries which are under construction and it may own some buses (e.g. hydrogen bus) with the bulk of buses owned by contracted operators.",
+                category: "Infrastructure & Assets",
+                icon: "🚍"
+            },
+            {
+                term: "PT Growth & Optimisation",
+                definition: "Focuses on driving performance improvements in public transport and boosting patronage growth. Key functions include overseeing change and growth projects, analysing service and patronage data, identifying operational efficiencies, and managing business planning and reporting processes to ensure a better customer experience and service delivery.",
+                category: "Operations & Management",
+                icon: "📈"
+            },
+            {
+                term: "PT Operations",
+                definition: "The day-to-day management of bus and ferry services, ensuring operators meet service and safety KPIs. This includes real-time network management, incident handling, contingency planning, ensuring facility safety, and working closely with operators to deliver high-performance services.",
+                category: "Operations & Management",
+                icon: "⚙️"
+            },
+            {
+                term: "PT Rail Services",
+                definition: "Responsible for managing and delivering passenger rail services, including operator contracts, rail infrastructure maintenance, and safety compliance. This term also involves the coordination with KiwiRail and other stakeholders to ensure service integration, the efficient operation of the rail network, and the delivery of high-quality customer outcomes.",
+                category: "Public Transport & Services",
+                icon: "🚊"
+            },
+            {
+                term: "PT Service Delivery",
+                definition: "The delivery of the public transport services (as defined in section 5(1) of the Land Transport Management Act 2003)",
+                category: "Public Transport & Services",
+                icon: "🚌"
+            },
+            {
+                term: "PT Service Planning & Development",
+                definition: "Involves the planning and development of future public transport services and infrastructure, including fleet decarbonisation, technology integration, operational infrastructure specification, and service programme development. The AT team focuses on future network design, scheduling, and enabling sustainable transport solutions.",
+                category: "Planning & Development",
+                icon: "📐"
+            },
+            {
+                term: "PT Stations",
+                definition: "Means the busway and rail stations. There are a total of 46 stations on the Auckland network, and this is expected to grow to approximately 58 by 2031.",
+                category: "Infrastructure & Assets",
+                icon: "🚉"
+            },
+            {
+                term: "PT Technology Projects",
+                definition: "Technology projects which support PT Service Delivery such as integrated ticketing, integrated fares, (HOP) journey-planning software, real-time information systems, development of websites providing information on public transport services, fares and timetables etc.",
+                category: "Technology & Systems",
+                icon: "💻"
+            },
+            {
+                term: "PT Wharves",
+                definition: "Means the ferry wharves",
+                category: "Infrastructure & Assets",
+                icon: "⛵"
+            },
+            {
+                term: "Rā Hihi",
+                definition: "Flyover component of the Eastern Busway project, ahead of schedule for late 2026 completion.",
+                category: "Infrastructure & Assets",
+                icon: "🌉"
+            },
+            {
+                term: "Regional Land Transport Plan (RLTP)",
+                definition: "Auckland's strategic transport investment plan aligned with national priorities. Co-governed with AT and NZTA, sets the 10-year transport investment proposal for the region. A key purpose of the RLTP is to set out and prioritise the land-transport activities that Auckland Transport, the NZ Transport Agency (NZTA) and KiwiRail seek funding for from the National Land Transport Fund (NLTF). As such, it is a 'bid' document. Activities in the National Land Transport Programme must reflect the priorities in the most recent Government Policy Statement on land transport (GPS).",
+                category: "Planning & Development",
+                icon: "📋"
+            },
+            {
+                term: "Regional Public Transport Plan (RPTP)",
+                definition: "Strategic plan for developing Auckland's public transport network (2023-2031).",
+                category: "Planning & Development",
+                icon: "📑"
+            },
+            {
+                term: "Regulations (road stopping)",
+                definition: "Road Stopping is the process of changing land with legal road status (including unformed roads or \"paper roads\") to a freehold title, allowing it to be privately owned. This process applies when a landowner has either illegally built on the road corridor or wishes to incorporate the road into their adjacent property ownership. The application for road stopping requires confirmation that the road is no longer needed for transport purposes, and it involves a series of legal steps, including public notifications, consultations, and a valuation of the land. The applicant must pay for associated costs, such as surveying, legal fees, and notifications. The road stopping process is governed by the Local Government Act 1974 or the Public Works Act 1981. The applicant must also obtain consent from all adjoining landowners and relevant authorities.",
+                category: "Financial & Regulatory",
+                icon: "🛑"
+            },
+            {
+                term: "Regulatory Functions",
+                definition: "Means RCA delegations that are regulatory in nature and not necessarily required for the seamless delivery of transport services e.g. delegations related to electricity, gas, postal services, road closures, street layouts, road corridor access. Assumption here is that we'd have to define theses post-legislation",
+                category: "Financial & Regulatory",
+                icon: "📜"
+            },
+            {
+                term: "Renewals",
+                definition: "Works to upgrade refurbish or replace existing facilities with facilities of equivalent capacity or performance capability. This includes all road pavements, road drainage, culverts, bridges, retaining walls, footpaths, cycleways, traffic signals and controls, streetlighting, bus stations and shelters, rail stations and rolling stock, ferries, wharves and navigation aids, etc.",
+                category: "Operations & Management",
+                icon: "🔄"
+            },
+            {
+                term: "Requiring Authority",
+                definition: "Auckland Transport (AT) is a \"requiring authority\" under the Resource Management Act 1991 (RMA). This status allows AT to designate land for public infrastructure, including roads and transport infrastructure, within the Auckland region. AT's designation powers, in conjunction with the RMA, enable them to undertake projects and works on specific sites and routes, and to protect those areas from activities that could hinder or compromise the proposed public work.",
+                category: "Financial & Regulatory",
+                icon: "🏛️"
+            },
+            {
+                term: "Research, Education and Training",
+                definition: "The functions of AT under S 45 of the LGACA include carrying out research and providing education and training in relation to land transport in Auckland.\n\nThe Auckland Transport Community Transport Road Safety Programme enhances road safety through initiatives with community partners, schools, and law enforcement. Key programmes include:\n\n- Restraints Programme: Ensures correct fitting of car seats.\n\n- Driver Licence Programme: Supports obtaining and maintaining driver's licences.\n\n- School Safety Programme: Emphasises safety at school gates and rural schools.\n\n- Motorcycle Safety Programme: Enhances motorcyclist safety.\n\n- Alcohol Programme: Combines enforcement and clinical interventions for repeat drunk driving offenders.\n\nThese efforts aim to create a safer environment for all road users by addressing key risk factors and promoting best practices in road safety.\n\nAuckland Transport also collects customer data, undertakes research and analyses this to provide insights that allows response and investment to identified gaps.",
+                category: "Safety & Enforcement",
+                icon: "🎓"
+            },
+            {
+                term: "Resilience/Adaptation",
+                definition: "Infrastructure improvements to withstand climate change and natural disasters, including flood response.",
+                category: "Infrastructure & Assets",
+                icon: "🛡️"
+            },
+            {
+                term: "Road - Operational Planning",
+                definition: "Operational Planning is the development of plans in the short term 0-5 years to manage and operate the roading network. The individual projects and activities that will be undertaken in a specific period to achieve its commitments and objectives.",
+                category: "Planning & Development",
+                icon: "🛣️"
+            },
+            {
+                term: "Road Controlling Authority",
+                definition: "Road Controlling Authority (RCA) In relation to a road:\n\na. means the authority, body or person having control of the road; and\n\nb. includes a person acting under and within the terms of a delegation or authorisation given by the controlling authority",
+                category: "Financial & Regulatory",
+                icon: "🛣️"
+            },
+            {
+                term: "Road Network Operations & Planning",
+                definition: "This work typically looks ahead up to 10 years and feeds into the Regional Public Transport Plan (RPTP). This planning is used to inform future PT service patterns, accounting for population & employment growth and changes in travel behaviour.",
+                category: "Planning & Development",
+                icon: "🗺️"
+            },
+            {
+                term: "Road Safety Improvements",
+                definition: "This could be $700m capex Auckland Road Safety Programme Business Case looks to also be known as known as Road Safety 2018/28 project",
+                category: "Safety & Enforcement",
+                icon: "⚠️"
+            },
+            {
+                term: "Road Services",
+                definition: "- Parking & Enforcement, Transport Safety, Road Network Operations & Planning",
+                category: "Operations & Management",
+                icon: "🛤️"
+            },
+            {
+                term: "Roads (arterials, collector and local roads)",
+                definition: "- Strategic arterial are roads that predominantly carry through traffic (but may also serve adjacent activities) providing inter and intra-regional connections\n\n- Primary arterial are roads that predominantly carry through traffic (but may also serve adjacent activities) and connect principal sectors of the not catered for by strategic routes)\n\n- Secondary arterials provide movement within the district between key nodes and connect major nodes within an area. Serve key activities.\n\n- Collector roads collect and distribute traffic from local roads to arterials within an area (and vice versa). Serve adjacent key activities.\n\n- Local roads collect and distribute traffic to/from local properties within an area",
+                category: "Infrastructure & Assets",
+                icon: "🛣️"
+            },
+            {
+                term: "Room to Move",
+                definition: "Parking management strategy being implemented across Auckland.",
+                category: "Planning & Development",
+                icon: "🅿️"
+            },
+            {
+                term: "Smooth Travel Exposure (STE)",
+                definition: "Metric measuring road surface quality and ride comfort (target: 83% for sealed roads).",
+                category: "Operations & Management",
+                icon: "🛣️"
+            },
+            {
+                term: "SOI (Statement of Intent)",
+                definition: "AT's three-year strategic plan with performance targets approved by Auckland Council.",
+                category: "Planning & Development",
+                icon: "📄"
+            },
+            {
+                term: "Special Vehicle Lanes (SVL)",
+                definition: "Dedicated lanes for buses, freight, and high-occupancy vehicles. A lane defined by signs or markings and restricted to a specified class or classes of vehicle; and includes a bus lane, a transit lane, a cycle lane and a light-rail vehicle lane.",
+                category: "Infrastructure & Assets",
+                icon: "🚌"
+            },
+            {
+                term: "Speed Management",
+                definition: "The setting and implementation of speed limits in accordance with the Land Transport Rule. Includes the use and installation of measures for ensuring speed outcomes such as safety cameras, driver feedback signs and physical infrastructure.",
+                category: "Safety & Enforcement",
+                icon: "🚧"
+            },
+            {
+                term: "Standards",
+                definition: "standards in regard to what? Is this a reference to the standards set out by NZTA for land transport including road infrastructure and public transport under the LTA?",
+                category: "Financial & Regulatory",
+                icon: "📏"
+            },
+            {
+                term: "Te Tiriti o Waitangi",
+                definition: "Treaty of Waitangi, foundational document guiding AT's engagement with Māori.",
+                category: "Planning & Development",
+                icon: "📜"
+            },
+            {
+                term: "Time of Use Charging",
+                definition: "Proposed congestion pricing system to manage peak travel demand. Time of use schemes are a way to improve traffic flows and shorten journey times by charging road users at certain times or locations, depending on how busy the roads are. The charge encourages some users to change their travel habits, so there are fewer people on the roads at the busiest times. It is similar to congestion charging, but it has a broader focus. While congestion charging targets specific roads to reduce volumes and travel times, time of use schemes aim to improve traffic flow across an entire network, enhancing reliability and productivity overall.",
+                category: "Financial & Regulatory",
+                icon: "⏰"
+            },
+            {
+                term: "Track Access Charges",
+                definition: "The cost incurred by AT for leasing access to Auckland's rail tracks. This includes a contribution towards KiwiRail's track maintenance (excluding major track rebuilding) and the electricity costs associated with the rail network. For FY24, these charges amounted to $70.3 million.",
+                category: "Financial & Regulatory",
+                icon: "💳"
+            },
+            {
+                term: "Traffic Demand Management",
+                definition: "Traffic demand management or travel demand management is the application of strategies and policies to increase the efficiency of transportation systems, that reduce travel demand, or to redistribute this demand in space or in time",
+                category: "Operations & Management",
+                icon: "🚥"
+            },
+            {
+                term: "Traffic Management Services",
+                definition: "Systems deployed to ease traffic congestion, improve the overall traffic efficiency and optimise traffic flows in the region by use of tools such as Coordinated Adaptive Traffic System (SCATS) collection of vehicle count data and CCTV footage to detect and measure traffic density. May also include other functions carried out by a road controlling authority such as temporary traffic management, road closure and corridor access request processes",
+                category: "Operations & Management",
+                icon: "🚦"
+            },
+            {
+                term: "Traffic Systems (lights)",
+                definition: "Traffic Systems (lights) refer to the network of traffic signal-controlled intersections designed to regulate and manage the movement of vehicles, pedestrians, and cyclists across the road network. These systems use a combination of sensors, cameras, and adaptive signal control technologies to adjust traffic light timings in real-time, based on traffic flow and road conditions.\n\nAuckland Transport is responsible for the management and maintenance of traffic lights.",
+                category: "Technology & Systems",
+                icon: "🚦"
+            },
+            {
+                term: "Train Station Responsibilities",
+                definition: "AT has ownership of station improvements. The land on which the stations sit is leased by the Crown to AT to 2070. AT has responsibility for management, maintenance and development of these assets, and pays the full capital and operating costs.",
+                category: "Infrastructure & Assets",
+                icon: "🚉"
+            },
+            {
+                term: "Transport Officers",
+                definition: "Transport Officers are responsible for ensuring safety, security, and compliance across Auckland's public transport network, especially at train and bus stations. They are warranted Enforcement Officers working on a 24/7 rotating roster. Their tasks include:\n\n- Fare compliance: Inspecting fares, issuing fines, and identifying repeat fare evaders.\n\n- Safety and security: Patrolling trains, stations, and bus interchanges to prevent antisocial behaviour and maintain a visible presence.\n\n- Customer service: Assisting passengers with mobility needs, providing travel information, and encouraging safe use of the network.\n\n- Incident response: Acting as first responders to incidents, providing first aid, managing the scene, and working with Police and operators.\n\n- Public education: Informing passengers of rules, reporting incidents, and helping improve services.",
+                category: "Safety & Enforcement",
+                icon: "👮"
+            },
+            {
+                term: "Transport Safety",
+                definition: "Network system safety programmes, speed management and education, Road to Zero integration, transport data, analytics and reporting (as it relates to safety/speed).",
+                category: "Safety & Enforcement",
+                icon: "🛡️"
+            },
+            {
+                term: "Transport, Resilience and Infrastructure Committee (TRIC)",
+                definition: "Auckland Council committee overseeing AT governance.",
+                category: "Financial & Regulatory",
+                icon: "🏛️"
+            },
+            {
+                term: "TTM (Temporary Traffic Management)",
+                definition: "Systems and equipment used to manage traffic around roadworks and events.",
+                category: "Operations & Management",
+                icon: "🚧"
+            },
+            {
+                term: "Vested Asset Revenue",
+                definition: "Vested asset revenue is recognised when control of the asset is transferred to Auckland Transport and is measured at the fair value of the asset received, unless there is a use or return condition attached to the asset.",
+                category: "Financial & Regulatory",
+                icon: "💼"
+            },
+            {
+                term: "Vested Assets",
+                definition: "Infrastructure transferred to AT ownership, including the $230 million old State Highway 1 from NZTA. Vested asset refer to infrastructure received from property developers who construct the infrastructure as a condition of development.",
+                category: "Infrastructure & Assets",
+                icon: "🏢"
+            },
+            {
+                term: "Vision Zero",
+                definition: "AT's commitment to eliminating deaths and serious injuries on Auckland roads.",
+                category: "Safety & Enforcement",
+                icon: "🚫"
+            },
+            {
+                term: "Weekly Fare Cap",
+                definition: "$50 maximum weekly charge for public transport users, implemented July 2024.",
+                category: "Public Transport & Services",
+                icon: "💳"
+            },
+            {
+                term: "Zero Emission Buses",
+                definition: "Buses that produce zero emissions at tailpipe. This will include fuel sources such as electric and hydrogen, but there may be other technologies available.\n\nBy 2025, the government will only allow zero-emission public transport buses to be purchased. This commitment targets complete decarbonisation of the public transport bus fleet by 2035.\n\nAT's Statement of Intent 2024--2027 includes targets to reduce operational emissions (from a 2021/22 baseline of 100,613 tCO₂e):\n\n- 2024/25: 10% increase (due to post-COVID service growth)\n\n- 2025/26: Net zero change from baseline\n\n- 2026/27: 5% decrease from baseline (14% decrease from 2023/24)",
+                category: "Technology & Systems",
+                icon: "🔋"
+            }
+        ];
+
+        // State management
+        let filteredData = [...glossaryData];
+        let selectedCategory = 'all';
+
+        // Get icon class based on category
+        function getIconClass(category) {
+            const iconMap = {
+                'Public Transport & Services': 'icon-transport',
+                'Infrastructure & Assets': 'icon-infrastructure',
+                'Operations & Management': 'icon-operations',
+                'Safety & Enforcement': 'icon-safety',
+                'Planning & Development': 'icon-planning',
+                'Technology & Systems': 'icon-technology',
+                'Financial & Regulatory': 'icon-financial'
+            };
+            return iconMap[category] || 'icon-transport';
+        }
+
+        // Initialize categories
+        function initializeCategories() {
+            const categories = [...new Set(glossaryData.map(item => item.category))].sort();
+            const categoryList = document.getElementById('categoryList');
+            
+            // Add "All" category
+            const allHtml = `
+                <li class="category-item">
+                    <button class="category-btn active" data-category="all">
+                        <span>All Categories</span>
+                        <span class="category-count">${glossaryData.length}</span>
+                    </button>
+                </li>
+            `;
+            
+            const categoriesHtml = categories.map(category => {
+                const count = glossaryData.filter(item => item.category === category).length;
+                return `
+                    <li class="category-item">
+                        <button class="category-btn" data-category="${category}">
+                            <span>${category}</span>
+                            <span class="category-count">${count}</span>
+                        </button>
+                    </li>
+                `;
+            }).join('');
+            
+            categoryList.innerHTML = allHtml + categoriesHtml;
+            
+            // Add event listeners
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => handleCategoryClick(btn));
+            });
+        }
+
+        // Handle category selection
+        function handleCategoryClick(btn) {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedCategory = btn.dataset.category;
+            filterAndRender();
+        }
+
+        // Search functionality
+        function handleSearch(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredData = selectedCategory === 'all' 
+                    ? [...glossaryData]
+                    : glossaryData.filter(item => item.category === selectedCategory);
+            } else {
+                filteredData = glossaryData.filter(item => {
+                    const matchesSearch = item.term.toLowerCase().includes(searchTerm) || 
+                                        item.definition.toLowerCase().includes(searchTerm);
+                    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+                    return matchesSearch && matchesCategory;
+                });
+            }
+            
+            renderTerms();
+        }
+
+        // Filter and render
+        function filterAndRender() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredData = glossaryData.filter(item => {
+                const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+                const matchesSearch = !searchTerm || 
+                    item.term.toLowerCase().includes(searchTerm) || 
+                    item.definition.toLowerCase().includes(searchTerm);
+                return matchesCategory && matchesSearch;
+            });
+            
+            renderTerms();
+        }
+
+        // Render terms
+        function renderTerms() {
+            const termsGrid = document.getElementById('termsGrid');
+            
+            if (filteredData.length === 0) {
+                termsGrid.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <h3>No results found</h3>
+                        <p>Try adjusting your search or selecting a different category</p>
+                    </div>
+                `;
+            } else {
+                termsGrid.innerHTML = filteredData.map(item => `
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon ${getIconClass(item.category)}">
+                                ${item.icon}
+                            </div>
+                            <h3 class="term-name">${item.term}</h3>
+                        </div>
+                        <p class="term-definition">${item.definition}</p>
+                        <span class="term-tag">${item.category}</span>
+                    </div>
+                `).join('');
+            }
+            
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalTerms').textContent = glossaryData.length;
+            document.getElementById('visibleTerms').textContent = filteredData.length;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCategories();
+            renderTerms();
+            
+            // Setup search
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+        });
+    </script>
+</body>
+</html>
