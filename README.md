@@ -1,5 +1,4 @@
 # aucklandtransport.github.io
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -733,6 +732,14 @@
             border: 1px solid var(--border-color);
             border-radius: 4px;
             background: white;
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Reset iframe content styling */
+        .file-viewer-body iframe {
+            isolation: isolate;
         }
 
         /* Category Modal */
@@ -1431,13 +1438,30 @@
                 const ext = file.name.split('.').pop().toLowerCase();
                 
                 if (ext === 'html' || ext === 'htm') {
-                    // For HTML files, create an iframe
-                    viewerBody.innerHTML = `<iframe class="file-viewer-iframe" srcdoc="" id="htmlFrame"></iframe>`;
-                    // Decode the base64 content and set it in the iframe
+                    // For HTML files, create a sandboxed iframe
                     const base64Content = file.content.split(',')[1];
                     const decodedContent = atob(base64Content);
+                    
+                    // Create iframe with sandbox and proper isolation
+                    viewerBody.innerHTML = `<iframe 
+                        class="file-viewer-iframe" 
+                        id="htmlFrame"
+                        sandbox="allow-scripts allow-same-origin"
+                        style="width: 100%; height: 70vh; border: 1px solid var(--border-color); border-radius: 4px; background: white;">
+                    </iframe>`;
+                    
                     const iframe = document.getElementById('htmlFrame');
-                    iframe.srcdoc = decodedContent;
+                    
+                    // Write content directly to iframe to ensure complete isolation
+                    iframe.onload = function() {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        iframeDoc.open();
+                        iframeDoc.write(decodedContent);
+                        iframeDoc.close();
+                    };
+                    
+                    // Trigger load event
+                    iframe.src = 'about:blank';
                 } else if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
                     // For images
                     viewerBody.innerHTML = `<img src="${file.content}" style="max-width: 100%; height: auto;">`;
