@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auckland Council + Transport Integration Scenarios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0c1929 0%, #1a2942 50%, #0c1929 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #64b5f6;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            text-shadow: 0 0 20px rgba(100, 181, 246, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(100, 181, 246, 0.5); }
+            to { text-shadow: 0 0 30px rgba(100, 181, 246, 0.8), 0 0 40px rgba(100, 181, 246, 0.4); }
+        }
+
+        .scenario-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .scenario-btn {
+            background: #1e293b;
+            border: 2px solid #334155;
+            color: #e0e6ed;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .scenario-btn:hover {
+            background: #334155;
+            transform: translateY(-2px);
+            color: #fff;
+        }
+
+        .scenario-btn.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border-color: transparent;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .scenario-info {
+            background: rgba(100, 181, 246, 0.1);
+            border: 1px solid rgba(100, 181, 246, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 0.9em;
+            color: #e0e6ed;
+        }
+        
+        .scenario-description h2 {
+            margin-bottom: 15px;
+        }
+        
+        .scenario-description ul {
+            list-style-position: inside;
+            margin-top: 10px;
+        }
+        
+        .scenario-description li {
+            margin: 5px 0;
+            color: #e0e6ed;
+        }
+
+        .org-chart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .node {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+            min-width: 220px;
+            text-align: center;
+            border: 2px solid rgba(100, 181, 246, 0.3);
+            font-size: 0.9em;
+        }
+
+        .node:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(100, 181, 246, 0.3);
+            border-color: rgba(100, 181, 246, 0.6);
+        }
+
+        .node.governing-body {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            border-color: rgba(255, 107, 107, 0.5);
+            font-size: 1.1em;
+            min-width: 300px;
+        }
+        
+        .node.governing-body .node-title,
+        .node.governing-body .node-name,
+        .node.governing-body .node-details {
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .node.ceo {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            border-color: rgba(78, 205, 196, 0.5);
+            font-size: 1.05em;
+            min-width: 280px;
+        }
+        
+        .node.ceo .node-title,
+        .node.ceo .node-name,
+        .node.ceo .node-details {
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .node.director {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            min-width: 260px;
+        }
+        
+        .node.director .node-title,
+        .node.director .node-name,
+        .node.director .node-details {
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .node.director .sub-items li {
+            color: #b3d9ff;
+        }
+        
+        .node.maori {
+            background: linear-gradient(135deg, #c94b4b 0%, #4b134f 100%);
+            border-color: rgba(201, 75, 75, 0.5);
+        }
+        
+        .node.maori .node-title,
+        .node.maori .node-name,
+        .node.maori .node-details {
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .node.transport {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            border-color: rgba(220, 38, 38, 0.5);
+        }
+
+        .node.new-transport {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            border-color: rgba(220, 38, 38, 0.8);
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .node.at-residual {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-color: rgba(245, 158, 11, 0.5);
+        }
+
+        .node.department {
+            background: linear-gradient(135deg, #607d8b 0%, #455a64 100%);
+            border-color: rgba(96, 125, 139, 0.5);
+            font-size: 0.85em;
+            min-width: 200px;
+        }
+
+        .node.sub-department {
+            background: linear-gradient(135deg, #37474f 0%, #263238 100%);
+            border-color: rgba(55, 71, 79, 0.5);
+            font-size: 0.8em;
+            min-width: 180px;
+            padding: 8px 15px;
+        }
+        
+        /* Ensure all node types have readable text */
+        .node.department .node-title,
+        .node.department .node-name,
+        .node.department .node-details,
+        .node.sub-department .node-title,
+        .node.sub-department .node-name,
+        .node.sub-department .node-details {
+            color: #e0e6ed;
+        }
+
+        .node.from-at {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .node.from-at::before {
+            content: 'FROM AT';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #dc2626;
+            color: white;
+            font-size: 0.6em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        .node-title {
+            font-weight: bold;
+            font-size: 0.95em;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .node-name {
+            color: #b3d9ff;
+            font-size: 0.85em;
+        }
+
+        .node-details {
+            font-size: 0.8em;
+            color: #a0c4ff;
+            margin-top: 4px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        /* Special styling for AT residual nodes for better readability */
+        .node.at-residual .node-title,
+        .node.at-residual .node-name,
+        .node.at-residual .node-details {
+            color: #1a1a1a !important;
+            text-shadow: 0 0 1px rgba(255,255,255,0.3);
+        }
+        
+        .node.at-residual .sub-items li {
+            color: #2d2d2d !important;
+        }
+        
+        .node.at-residual .sub-items li strong {
+            color: #000 !important;
+            font-weight: 600;
+        }
+        
+        /* Also improve readability for new transport nodes */
+        .node.new-transport .node-title,
+        .node.new-transport .node-name,
+        .node.new-transport .node-details,
+        .node.transport .node-title,
+        .node.transport .node-name,
+        .node.transport .node-details {
+            color: #fff !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .node.new-transport .sub-items li,
+        .node.transport .sub-items li {
+            color: #e0e6ed !important;
+        }
+        
+        /* Ensure hover states maintain readability */
+        .node.at-residual:hover .node-title,
+        .node.at-residual:hover .node-name,
+        .node.at-residual:hover .node-details,
+        .node.at-residual:hover .sub-items li {
+            color: #1a1a1a !important;
+        }
+
+        .node.expanded .node-details {
+            max-height: 400px;
+            margin-top: 8px;
+        }
+
+        .expand-indicator {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Make expand indicator visible on orange/amber backgrounds */
+        .node.at-residual .expand-indicator {
+            color: #1a1a1a !important;
+            font-weight: bold;
+        }
+
+        .node.expanded .expand-indicator {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .children {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 30px;
+            position: relative;
+            gap: 10px;
+        }
+
+        .children::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(to bottom, transparent, #64b5f6);
+            transform: translateX(-50%);
+        }
+
+        .child-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .child-group::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            width: 2px;
+            height: 15px;
+            background: #64b5f6;
+            transform: translateX(-50%);
+        }
+
+        .sub-items {
+            list-style: none;
+            padding: 8px 0;
+            margin: 0;
+            display: none;
+            text-align: left;
+            font-size: 0.8em;
+        }
+
+        .node.expanded .sub-items {
+            display: block;
+        }
+
+        .sub-items li {
+            padding: 3px 0;
+            color: #a0c4ff;
+            transition: color 0.3s ease;
+        }
+        
+        .sub-items li strong {
+            color: #e0e6ed;
+            font-weight: 600;
+        }
+
+        .transition-timeline {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .transition-timeline h2 {
+            color: #a78bfa;
+            margin-bottom: 20px;
+        }
+
+        .timeline-track {
+            height: 4px;
+            background: #334155;
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .timeline-phase {
+            position: absolute;
+            top: -10px;
+            transform: translateX(-50%);
+            background: #8b5cf6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .transition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .transition-item {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #8b5cf6;
+            transition: all 0.3s ease;
+        }
+
+        .transition-item h4 {
+            color: #e0e6ed;
+            margin-bottom: 8px;
+        }
+
+        .transition-item p {
+            color: #a0c4ff;
+            margin: 4px 0;
+        }
+
+        .transition-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .scenario-description {
+            display: none;
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            color: #e0e6ed;
+        }
+        
+        .scenario-description p,
+        .scenario-description strong {
+            color: #e0e6ed;
+        }
+
+        .scenario-description.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        /* Ensure list styles are visible */
+        .scenario-description ul {
+            padding-left: 20px;
+        }
+        
+        .scenario-description ul li {
+            list-style: none;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .scenario-description ul li::before {
+            position: absolute;
+            left: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5);
+            }
+            100% {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        .highlight-new {
+            animation: highlightPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes highlightPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .children {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .node {
+                min-width: 200px;
+                font-size: 0.8em;
+            }
+
+            h1 {
+                font-size: 1.6em;
+            }
+
+            .scenario-btn {
+                font-size: 0.9em;
+                padding: 10px 16px;
+            }
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e0e6ed;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Auckland Council + Transport Integration Scenarios</h1>
+        
+        <div class="scenario-info">
+            Select a scenario to see how Auckland Transport operations would be integrated into Auckland Council's structure
+        </div>
+        
+        <div class="scenario-selector">
+            <button class="scenario-btn active" onclick="showScenario('pure-bus')">Pure Bus Company</button>
+            <button class="scenario-btn" onclick="showScenario('operations-plus')">Operations Plus</button>
+            <button class="scenario-btn" onclick="showScenario('integrated')">Integrated Delivery</button>
+            <button class="scenario-btn" onclick="showScenario('strategic')">Strategic Alignment</button>
+            <button class="scenario-btn" onclick="showScenario('status-quo')">Status Quo Plus</button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); border-color: rgba(220, 38, 38, 0.8);"></div>
+                <span>New Transport Functions</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: rgba(245, 158, 11, 0.5);"></div>
+                <span>Residual AT Entity</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%); border-color: rgba(100, 181, 246, 0.3);"></div>
+                <span>Existing AC Functions</span>
+            </div>
+        </div>
+
+        <!-- Scenario Descriptions -->
+        <div id="pure-bus-desc" class="scenario-description active">
+            <h2 style="color: #dc2626;">Scenario 1: Pure Bus Company</h2>
+            <p><strong>Overview:</strong> AT becomes a pure public transport operator. All strategic, planning, and infrastructure functions transfer to Auckland Council.</p>
+            <ul>
+                <li>✓ Maximum integration and policy coherence</li>
+                <li>✓ Clear political alignment with Mayor's vision</li>
+                <li>✗ Highest implementation risk and complexity</li>
+                <li>✗ 1,600-1,800 staff to transfer</li>
+            </ul>
+            <p><strong>Timeline:</strong> 6-12 months aggressive implementation</p>
+        </div>
+
+        <div id="operations-plus-desc" class="scenario-description">
+            <h2 style="color: #f59e0b;">Scenario 2: Operations Plus</h2>
+            <p><strong>Overview:</strong> AT retains PT operations and minor capital works. Strategic planning and major projects move to AC.</p>
+            <ul>
+                <li>✓ Balanced approach with manageable risk</li>
+                <li>✓ Retains operational expertise at AT</li>
+                <li>✗ Still significant complexity</li>
+                <li>✗ 1,100-1,300 staff to transfer</li>
+            </ul>
+            <p><strong>Timeline:</strong> 12-18 months phased approach</p>
+        </div>
+
+        <div id="integrated-desc" class="scenario-description">
+            <h2 style="color: #8b5cf6;">Scenario 3: Integrated Delivery</h2>
+            <p><strong>Overview:</strong> AT maintains delivery capability. Only policy and major strategic projects transfer to AC.</p>
+            <ul>
+                <li>✓ Strong service continuity</li>
+                <li>✓ Lower implementation risk</li>
+                <li>✗ Less strategic alignment</li>
+                <li>✗ 600-800 staff to transfer</li>
+            </ul>
+            <p><strong>Timeline:</strong> 18-24 months gradual transition</p>
+        </div>
+
+        <div id="strategic-desc" class="scenario-description">
+            <h2 style="color: #10b981;">Scenario 4: Strategic Alignment</h2>
+            <p><strong>Overview:</strong> High-level policy alignment only. AT remains largely intact with enhanced coordination.</p>
+            <ul>
+                <li>✓ Minimal disruption</li>
+                <li>✓ Quick implementation</li>
+                <li>✗ Limited integration benefits</li>
+                <li>✗ 200-300 staff to transfer</li>
+            </ul>
+            <p><strong>Timeline:</strong> 6-12 months coordination framework</p>
+        </div>
+
+        <div id="status-quo-desc" class="scenario-description">
+            <h2 style="color: #64748b;">Scenario 5: Status Quo Plus</h2>
+            <p><strong>Overview:</strong> Only Strategy, Policy & Planning unit transfers. Minimal structural change.</p>
+            <ul>
+                <li>✓ No significant disruption</li>
+                <li>✓ Immediate implementation</li>
+                <li>✗ Maintains current inefficiencies</li>
+                <li>✗ Only 60 staff transfer</li>
+            </ul>
+            <p><strong>Timeline:</strong> 3 months simple transfer</p>
+        </div>
+        
+        <div class="org-chart" id="orgChart">
+            <!-- Dynamic content will be inserted here -->
+        </div>
+
+        <div class="transition-timeline">
+            <h2 style="color: #a78bfa; margin-bottom: 20px;">Transition Roadmap</h2>
+            <div id="transitionContent">
+                <!-- Dynamic timeline content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScenario = 'pure-bus';
+
+        function toggleNode(node) {
+            node.classList.toggle('expanded');
+        }
+
+        function showScenario(scenario) {
+            // Update active button
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Hide all descriptions
+            document.querySelectorAll('.scenario-description').forEach(desc => {
+                desc.classList.remove('active');
+            });
+
+            // Show selected description
+            document.getElementById(scenario + '-desc').classList.add('active');
+
+            currentScenario = scenario;
+            updateOrgChart(scenario);
+            updateTransitionPlan(scenario);
+        }
+
+        function updateOrgChart(scenario) {
+            const orgChart = document.getElementById('orgChart');
+            
+            let chartHTML = `
+                <div class="node governing-body pulse" onclick="toggleNode(this)">
+                    <div class="node-title">Governing Body</div>
+                    <div class="node-name">Mayor Wayne Brown + 20 Councillors</div>
+                    <div class="node-details">Auckland's regional governing body making strategic decisions</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+                
+                <div class="children">
+                    <div class="child-group">
+                        <div class="node ceo" onclick="toggleNode(this)">
+                            <div class="node-title">Chief Executive</div>
+                            <div class="node-name">Phil Wilson</div>
+                            <div class="node-details">CEO overseeing integrated transport operations</div>
+                            <span class="expand-indicator">▼</span>
+                        </div>
+                        
+                        <div class="children">
+            `;
+
+            // Add scenario-specific structure
+            switch(scenario) {
+                case 'pure-bus':
+                    chartHTML += generatePureBusStructure();
+                    break;
+                case 'operations-plus':
+                    chartHTML += generateOperationsPlusStructure();
+                    break;
+                case 'integrated':
+                    chartHTML += generateIntegratedStructure();
+                    break;
+                case 'strategic':
+                    chartHTML += generateStrategicStructure();
+                    break;
+                case 'status-quo':
+                    chartHTML += generateStatusQuoStructure();
+                    break;
+            }
+
+            chartHTML += `
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            orgChart.innerHTML = chartHTML;
+        }
+
+        function generatePureBusStructure() {
+            return `
+                <!-- New Chief Transport Officer position -->
+                <div class="node director new-transport highlight-new" onclick="toggleNode(this)">
+                    <div class="node-title">Chief Transport Officer</div>
+                    <div class="node-name">NEW POSITION</div>
+                    <div class="node-details">Leading integrated transport strategy and operations</div>
+                    <ul class="sub-items">
+                        <li><strong>Reports to:</strong> CEO</li>
+                        <li><strong>Staff:</strong> 1,800+ from AT</li>
+                        <li><strong>Key Functions:</strong></li>
+                        <li>• Transport Strategy & Policy</li>
+                        <li>• Network Planning & Design</li>
+                        <li>• Major Capital Projects</li>
+                        <li>• Asset Management</li>
+                        <li>• Transport Technology</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- Modified Infrastructure Director -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Infrastructure & Resilience</div>
+                    <div class="node-name">Barry Potter</div>
+                    <div class="node-details">Enhanced role with transport infrastructure</div>
+                    <ul class="sub-items">
+                        <li><strong>Enhanced Responsibilities:</strong></li>
+                        <li>• Transport Asset Management (from AT)</li>
+                        <li>• Roads & Streets Operations (from AT)</li>
+                        <li>• Transport Infrastructure Planning</li>
+                        <li>• Existing water & resilience functions</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- Existing directors -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Community</div>
+                    <div class="node-name">Rachel Kelleher</div>
+                    <div class="node-details">Enhanced with transport customer services</div>
+                    <ul class="sub-items">
+                        <li><strong>Additional Functions:</strong></li>
+                        <li>• AT Customer Services (from AT)</li>
+                        <li>• Community Transport Programs</li>
+                        <li>• Parking Services (from AT)</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Policy, Planning & Governance</div>
+                    <div class="node-name">Megan Tyler</div>
+                    <div class="node-details">Expanded transport policy role</div>
+                    <ul class="sub-items">
+                        <li><strong>New Transport Functions:</strong></li>
+                        <li>• Regional Transport Strategy</li>
+                        <li>• Transport Policy & Planning (from AT)</li>
+                        <li>• Integrated Land Use Planning</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- Residual AT -->
+                <div class="node at-residual" onclick="toggleNode(this)">
+                    <div class="node-title">Auckland Transport (Residual)</div>
+                    <div class="node-name">Pure PT Operations</div>
+                    <div class="node-details">500-700 staff focused on bus/train/ferry operations</div>
+                    <ul class="sub-items">
+                        <li><strong>Remaining Functions:</strong></li>
+                        <li>• Bus Operations Management</li>
+                        <li>• Rail Operations (contract management)</li>
+                        <li>• Ferry Operations</li>
+                        <li>• Real-time Control Centre</li>
+                        <li>• PT Fleet Management</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+            `;
+        }
+
+        function generateOperationsPlusStructure() {
+            return `
+                <!-- Enhanced Infrastructure Director -->
+                <div class="node director transport" onclick="toggleNode(this)">
+                    <div class="node-title">Director Transport & Infrastructure</div>
+                    <div class="node-name">NEW: Combined Role</div>
+                    <div class="node-details">Merged infrastructure and transport planning</div>
+                    <ul class="sub-items">
+                        <li><strong>Combined Functions:</strong></li>
+                        <li>• Transport Strategy (from AT)</li>
+                        <li>• Major Capital Projects (from AT)</li>
+                        <li>• Asset Management</li>
+                        <li>• Infrastructure Resilience</li>
+                        <li>• Network Planning (partial)</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- Policy Director with transport -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Policy, Planning & Governance</div>
+                    <div class="node-name">Megan Tyler</div>
+                    <div class="node-details">Enhanced transport policy coordination</div>
+                    <ul class="sub-items">
+                        <li><strong>Transport Additions:</strong></li>
+                        <li>• Regional Transport Planning</li>
+                        <li>• Transport Policy Framework</li>
+                        <li>• Funding & Pricing Strategy</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- Other existing directors -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Community</div>
+                    <div class="node-name">Rachel Kelleher</div>
+                    <div class="node-details">Standard role with parking services</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Group CFO</div>
+                    <div class="node-name">Ross Tucker</div>
+                    <div class="node-details">Integrated transport funding</div>
+                    <ul class="sub-items">
+                        <li>• Transport Funding Strategy</li>
+                        <li>• Fare Revenue Management</li>
+                        <li>• Infrastructure Finance</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- AT Operations Plus -->
+                <div class="node at-residual" onclick="toggleNode(this)">
+                    <div class="node-title">Auckland Transport</div>
+                    <div class="node-name">Operations Plus Entity</div>
+                    <div class="node-details">1,000-1,200 staff - Operations & minor capital</div>
+                    <ul class="sub-items">
+                        <li><strong>Retained Functions:</strong></li>
+                        <li>• All PT Operations</li>
+                        <li>• Network Operations Centre</li>
+                        <li>• Minor Capital Works (<$10M)</li>
+                        <li>• Maintenance Programs</li>
+                        <li>• Customer Service (partial)</li>
+                        <li>• Some network planning</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+            `;
+        }
+
+        function generateIntegratedStructure() {
+            return `
+                <!-- Existing directors with transport additions -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Policy, Planning & Governance</div>
+                    <div class="node-name">Megan Tyler</div>
+                    <div class="node-details">Strategic transport policy only</div>
+                    <ul class="sub-items">
+                        <li><strong>Transport Functions:</strong></li>
+                        <li>• High-level Transport Strategy</li>
+                        <li>• Regional Policy Alignment</li>
+                        <li>• Major Project Governance</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Infrastructure & Resilience</div>
+                    <div class="node-name">Barry Potter</div>
+                    <div class="node-details">Major transport projects oversight</div>
+                    <ul class="sub-items">
+                        <li><strong>Transport Additions:</strong></li>
+                        <li>• Major Capital Projects (>$50M)</li>
+                        <li>• Strategic Asset Planning</li>
+                        <li>• Cross-boundary Coordination</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- Other directors remain largely unchanged -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Community</div>
+                    <div class="node-name">Rachel Kelleher</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Group CFO</div>
+                    <div class="node-name">Ross Tucker</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- AT Integrated Delivery -->
+                <div class="node at-residual" onclick="toggleNode(this)">
+                    <div class="node-title">Auckland Transport</div>
+                    <div class="node-name">Integrated Delivery Entity</div>
+                    <div class="node-details">1,500-1,700 staff - Strong delivery focus</div>
+                    <ul class="sub-items">
+                        <li><strong>Retained Functions:</strong></li>
+                        <li>• All Operations</li>
+                        <li>• Network Planning & Design</li>
+                        <li>• Capital Delivery (most)</li>
+                        <li>• Asset Management (operational)</li>
+                        <li>• Customer Services</li>
+                        <li>• Technology & Innovation</li>
+                        <li>• Safety Programs</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+            `;
+        }
+
+        function generateStrategicStructure() {
+            return `
+                <!-- Minimal changes to existing structure -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Policy, Planning & Governance</div>
+                    <div class="node-name">Megan Tyler</div>
+                    <div class="node-details">Enhanced coordination role</div>
+                    <ul class="sub-items">
+                        <li><strong>New Coordination:</strong></li>
+                        <li>• Transport Policy Alignment</li>
+                        <li>• Strategic Integration Office</li>
+                        <li>• Performance Monitoring</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- Other directors unchanged -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Infrastructure & Resilience</div>
+                    <div class="node-name">Barry Potter</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Community</div>
+                    <div class="node-name">Rachel Kelleher</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Group CFO</div>
+                    <div class="node-name">Ross Tucker</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- AT largely unchanged -->
+                <div class="node at-residual" onclick="toggleNode(this)">
+                    <div class="node-title">Auckland Transport</div>
+                    <div class="node-name">Enhanced Autonomy Model</div>
+                    <div class="node-details">2,000-2,100 staff - Largely intact</div>
+                    <ul class="sub-items">
+                        <li><strong>Changes:</strong></li>
+                        <li>• Enhanced reporting to AC</li>
+                        <li>• Aligned strategic planning</li>
+                        <li>• Joint policy development</li>
+                        <li>• Shared performance framework</li>
+                        <li><strong>Otherwise business as usual</strong></li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+            `;
+        }
+
+        function generateStatusQuoStructure() {
+            return `
+                <!-- Minimal change -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Policy, Planning & Governance</div>
+                    <div class="node-name">Megan Tyler</div>
+                    <div class="node-details">SPP team integration</div>
+                    <ul class="sub-items">
+                        <li><strong>New Team:</strong></li>
+                        <li>• Strategy, Policy & Planning (60 staff from AT)</li>
+                        <li>• Regional coordination enhanced</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- Other directors unchanged -->
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Infrastructure & Resilience</div>
+                    <div class="node-name">Barry Potter</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Director Community</div>
+                    <div class="node-name">Rachel Kelleher</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <div class="node director" onclick="toggleNode(this)">
+                    <div class="node-title">Group CFO</div>
+                    <div class="node-name">Ross Tucker</div>
+                    <span class="expand-indicator">▼</span>
+                </div>
+
+                <!-- AT minimal change -->
+                <div class="node at-residual" onclick="toggleNode(this)">
+                    <div class="node-title">Auckland Transport</div>
+                    <div class="node-name">Current Structure</div>
+                    <div class="node-details">2,240 staff - Minimal change</div>
+                    <ul class="sub-items">
+                        <li><strong>Change:</strong></li>
+                        <li>• SPP team moved to AC (60 staff)</li>
+                        <li>• Otherwise unchanged</li>
+                    </ul>
+                    <span class="expand-indicator">▼</span>
+                </div>
+            `;
+        }
+
+        function updateTransitionPlan(scenario) {
+            const transitionContent = document.getElementById('transitionContent');
+            let timelineHTML = '';
+
+            switch(scenario) {
+                case 'pure-bus':
+                    timelineHTML = `
+                        <div class="timeline-track">
+                            <div class="timeline-phase" style="left: 15%;">Month 1-2: Planning</div>
+                            <div class="timeline-phase" style="left: 40%;">Month 3-6: Preparation</div>
+                            <div class="timeline-phase" style="left: 70%;">Month 7-10: Transfer</div>
+                            <div class="timeline-phase" style="left: 90%;">Month 11-12: Stabilize</div>
+                        </div>
+                        <div class="transition-grid">
+                            <div class="transition-item">
+                                <h4>Phase 1: Planning</h4>
+                                <p>• Detailed org design</p>
+                                <p>• Staff consultation</p>
+                                <p>• Systems mapping</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Phase 2: Preparation</h4>
+                                <p>• Recruit CTO</p>
+                                <p>• IT integration plan</p>
+                                <p>• Staff assignments</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Phase 3: Transfer</h4>
+                                <p>• Move 1,600+ staff</p>
+                                <p>• Migrate systems</p>
+                                <p>• Transfer assets</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Phase 4: Stabilize</h4>
+                                <p>• Optimize structure</p>
+                                <p>• Address issues</p>
+                                <p>• Performance review</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'operations-plus':
+                    timelineHTML = `
+                        <div class="timeline-track">
+                            <div class="timeline-phase" style="left: 10%;">Month 1-3: Design</div>
+                            <div class="timeline-phase" style="left: 35%;">Month 4-9: Phase 1</div>
+                            <div class="timeline-phase" style="left: 60%;">Month 10-15: Phase 2</div>
+                            <div class="timeline-phase" style="left: 85%;">Month 16-18: Complete</div>
+                        </div>
+                        <div class="transition-grid">
+                            <div class="transition-item">
+                                <h4>Design Phase</h4>
+                                <p>• Function mapping</p>
+                                <p>• Role definitions</p>
+                                <p>• Change strategy</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Phase 1 Transfer</h4>
+                                <p>• Policy teams (200)</p>
+                                <p>• Major projects (350)</p>
+                                <p>• Planning units</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Phase 2 Transfer</h4>
+                                <p>• Asset teams (400)</p>
+                                <p>• Support functions</p>
+                                <p>• Systems migration</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Completion</h4>
+                                <p>• Final transfers</p>
+                                <p>• Process refinement</p>
+                                <p>• Benefits tracking</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'integrated':
+                    timelineHTML = `
+                        <div class="timeline-track">
+                            <div class="timeline-phase" style="left: 10%;">Month 1-6: Pilot</div>
+                            <div class="timeline-phase" style="left: 35%;">Month 7-12: Evaluate</div>
+                            <div class="timeline-phase" style="left: 60%;">Month 13-20: Scale</div>
+                            <div class="timeline-phase" style="left: 85%;">Month 21-24: Embed</div>
+                        </div>
+                        <div class="transition-grid">
+                            <div class="transition-item">
+                                <h4>Pilot Program</h4>
+                                <p>• Test with policy team</p>
+                                <p>• Joint project trials</p>
+                                <p>• Process development</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Evaluation</h4>
+                                <p>• Assess pilot results</p>
+                                <p>• Refine approach</p>
+                                <p>• Stakeholder feedback</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Scaled Rollout</h4>
+                                <p>• Gradual expansion</p>
+                                <p>• 600-800 staff move</p>
+                                <p>• Systems alignment</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Embedding</h4>
+                                <p>• Culture integration</p>
+                                <p>• Process optimization</p>
+                                <p>• Continuous improvement</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'strategic':
+                    timelineHTML = `
+                        <div class="timeline-track">
+                            <div class="timeline-phase" style="left: 20%;">Month 1-3: Framework</div>
+                            <div class="timeline-phase" style="left: 50%;">Month 4-6: Implement</div>
+                            <div class="timeline-phase" style="left: 80%;">Month 7-12: Optimize</div>
+                        </div>
+                        <div class="transition-grid">
+                            <div class="transition-item">
+                                <h4>Framework Design</h4>
+                                <p>• Governance model</p>
+                                <p>• Coordination office</p>
+                                <p>• KPI alignment</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Implementation</h4>
+                                <p>• Transfer 200-300 staff</p>
+                                <p>• Joint committees</p>
+                                <p>• Reporting systems</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Optimization</h4>
+                                <p>• Fine-tune processes</p>
+                                <p>• Address gaps</p>
+                                <p>• Build relationships</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'status-quo':
+                    timelineHTML = `
+                        <div class="timeline-track">
+                            <div class="timeline-phase" style="left: 30%;">Month 1: Decision</div>
+                            <div class="timeline-phase" style="left: 60%;">Month 2: Transfer</div>
+                            <div class="timeline-phase" style="left: 90%;">Month 3: Complete</div>
+                        </div>
+                        <div class="transition-grid">
+                            <div class="transition-item">
+                                <h4>Decision & Planning</h4>
+                                <p>• Board approval</p>
+                                <p>• Staff notification</p>
+                                <p>• Transfer planning</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>SPP Transfer</h4>
+                                <p>• Move 60 staff</p>
+                                <p>• Office relocation</p>
+                                <p>• Systems access</p>
+                            </div>
+                            <div class="transition-item">
+                                <h4>Completion</h4>
+                                <p>• Integration complete</p>
+                                <p>• Reporting lines set</p>
+                                <p>• Business as usual</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            transitionContent.innerHTML = timelineHTML;
+        }
+
+        // Initialize with Pure Bus scenario
+        updateOrgChart('pure-bus');
+        updateTransitionPlan('pure-bus');
+    </script>
+</body>
+</html>
